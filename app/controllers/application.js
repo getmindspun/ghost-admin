@@ -1,22 +1,27 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
-import {action} from '@ember/object';
 import {computed} from '@ember/object';
+import {
+    contrast,
+    darkenToContrastThreshold,
+    hexToRgb,
+    lightenToContrastThreshold,
+    rgbToHex
+} from 'ghost-admin/utils/color';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend({
-    ajax: service(),
-    config: service(),
+    billing: service(),
     customViews: service(),
+    config: service(),
     dropdown: service(),
-    ghostPaths: service(),
+    feature: service(),
     router: service(),
     session: service(),
     settings: service(),
     ui: service(),
 
-    updateUrl: computed.reads('config.updateUrl'),
-    showBilling: computed.reads('config.billingUrl'),
+    showBilling: computed.reads('config.hostSettings.billing.enabled'),
     showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user.isFulfilled}', 'ui.isFullScreen', function () {
         let {router, session, ui} = this;
 
@@ -35,19 +40,31 @@ export default Controller.extend({
                 && !router.currentRouteName.match(/(signin|signup|setup|reset)/);
     }),
 
-    openUpdateTab: action(function (event) {
-        event.preventDefault();
-        const updateWindow = window.open('', '_blank');
+    adjustedAccentColor: computed('settings.accentColor', 'feature.nightShift', function () {
+        const accentColor = this.settings.get('accentColor');
+        const nightShift = this.feature.get('nightShift');
+        // hardcoded background colors because
+        // grabbing color from .gh-main with getComputedStyle always returns #ffffff
+        const backgroundColor = nightShift ? '#151719' : '#ffffff';
 
-        updateWindow.document.write('Loading...');
+        const accentRgb = hexToRgb(accentColor);
+        const backgroundRgb = hexToRgb(backgroundColor);
 
-        const updateUrl = new URL(this.config.get('updateUrl'));
-        const ghostIdentityUrl = this.ghostPaths.url.api('identities');
+        // WCAG contrast. 1 = lowest contrast, 21 = highest contrast
+        const accentContrast = contrast(backgroundRgb, accentRgb);
 
-        this.ajax.request(ghostIdentityUrl).then((response) => {
-            const token = response && response.identities && response.identities[0] && response.identities[0].token;
-            updateUrl.searchParams.append('jwt', token);
-            updateWindow.location.href = updateUrl.toString();
-        });
+        if (accentContrast > 2) {
+            return accentColor;
+        }
+
+        let adjustedAccentRgb = accentRgb;
+
+        if (nightShift) {
+            adjustedAccentRgb = lightenToContrastThreshold(accentRgb, backgroundRgb, 2);
+        } else {
+            adjustedAccentRgb = darkenToContrastThreshold(accentRgb, backgroundRgb, 2);
+        }
+
+        return rgbToHex(adjustedAccentRgb);
     })
 });

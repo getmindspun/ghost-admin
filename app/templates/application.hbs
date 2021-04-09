@@ -1,30 +1,20 @@
 <GhApp @showSettingsMenu={{this.ui.showSettingsMenu}}>
     <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
 
-    {{#if this.session.isAuthenticated}}
-        {{#if (and (gh-user-can-admin this.session.user) this.updateUrl)}}
-            <aside class="gh-update-banner">
-                <div class="gh-alert-content">
-                    A new major version of Ghost is available!
-                </div>
-                <a href={{this.updateUrl}} target="_blank" {{on "click" this.openUpdateTab}}>Click here to update to Ghost 4.0</a>
-            </aside>
-        {{/if}}
-    {{/if}}
-
     <GhAlerts />
 
     <div class="gh-viewport {{if this.ui.showSettingsMenu 'settings-menu-expanded'}} {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
         {{#if this.showNavMenu}}
-            <GhNavMenu @icon={{this.settings.settledIcon}} />
+            <GhNavMenu />
         {{/if}}
 
         <main class="gh-main {{this.ui.mainClass}}" role="main">
             {{outlet}}
 
             {{#if this.showBilling}}
-                <GhBillingModal />
+                <GhBillingModal @billingWindowOpen={{this.billing.billingWindowOpen}} />
             {{/if}}
+
         </main>
 
         <GhNotifications />
@@ -44,6 +34,16 @@
         />
     {{/if}}
 
+    {{#if this.settings.accentColor}}
+        <style>
+            .koenig-editor__editor a:not([class]) {
+                color: {{this.adjustedAccentColor}};
+            }
+            .koenig-editor__editor blockquote {
+                border-left: 0.25rem solid {{this.adjustedAccentColor}};
+            }
+        </style>
+    {{/if}}
 </GhApp>
 
 <EmberLoadRemover />
