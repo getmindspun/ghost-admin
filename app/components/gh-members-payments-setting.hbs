@@ -216,6 +216,7 @@
     </section>
 </div>
 
+{{#unless (enable-developer-experiments)}}
 <div class="gh-main-section">
     <h4 class="gh-main-section-header small bn">Access</h4>
     <section class="gh-expandable">
@@ -277,6 +278,7 @@
         </div>
     </section>
 </div>
+{{/unless}}
 
 {{#if this.showDisconnectStripeConnectModal}}
     <GhFullscreenModal @modal="disconnect-stripe"
@@ -285,21 +287,5 @@
         }}
         @confirm={{action "disconnectStripeConnectIntegration"}}
         @close={{action "closeDisconnectStripeModal"}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.showPortalSettings}}
-    <GhFullscreenModal @modal="portal-settings"
-        @model={{hash
-            openStripeSettings=(action "openStripeSettings")
-        }}
-        @close={{action "closePortalSettings"}}
-        @modifier="full-overlay portal-settings" />
-{{/if}}
-
-{{#if this.showLeaveSettingsModal}}
-    <GhFullscreenModal @modal="leave-settings"
-        @confirm={{action "leavePortalSettings"}}
-        @close={{action "closeLeaveSettingsModal"}}
         @modifier="action wide" />
 {{/if}}
