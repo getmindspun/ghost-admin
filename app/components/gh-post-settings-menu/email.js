@@ -4,7 +4,7 @@ import validator from 'validator';
 import {action} from '@ember/object';
 import {alias, not, oneWay, or} from '@ember/object/computed';
 import {computed} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -125,6 +125,7 @@ export default Component.extend({
                 if (email.status === 'failed') {
                     throw new EmailFailedError(email.error);
                 }
+                pollTimeout += RETRY_EMAIL_POLL_LENGTH;
             }
         }
 

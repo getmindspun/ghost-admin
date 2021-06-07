@@ -9,7 +9,7 @@ import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
 import {inject as controller} from '@ember/controller';
 import {get} from '@ember/object';
-import {htmlSafe} from '@ember/string';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError} from 'ghost-admin/services/ajax';
@@ -144,8 +144,10 @@ export default Controller.extend({
         return this.store.peekAll('snippet');
     }),
 
-    snippets: computed('_snippets.@each.isNew', function () {
-        return this._snippets.reject(snippet => snippet.get('isNew'));
+    snippets: computed('_snippets.@each.{name,isNew}', function () {
+        return this._snippets
+            .reject(snippet => snippet.get('isNew'))
+            .sort((a, b) => a.name.localeCompare(b.name));
     }),
 
     canManageSnippets: computed('session.user.{isOwnerOrAdmin,isEditor}', function () {
@@ -531,6 +533,11 @@ export default Controller.extend({
         try {
             return yield this._savePost.perform();
         } catch (error) {
+            if (error === undefined) {
+                // validation error
+                return;
+            }
+
             if (error) {
                 let status = this.get('post.status');
                 this._showErrorAlert(status, status, error);

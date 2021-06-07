@@ -1,8 +1,10 @@
 import Service, {inject as service} from '@ember/service';
-import {dasherize, htmlSafe} from '@ember/string';
+import {captureException} from '@sentry/browser';
+import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
 import {get, set} from '@ember/object';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {
     isMaintenanceError,
@@ -28,6 +30,7 @@ export default Service.extend({
         this.content = emberA();
     },
 
+    config: service(),
     upgradeStatus: service(),
 
     alerts: filter('content', function (notification) {
@@ -98,6 +101,10 @@ export default Service.extend({
     },
 
     showAPIError(resp, options) {
+        if (this.config.get('sentry_dsn')) {
+            captureException(resp);
+        }
+
         // handle "global" errors
         if (isVersionMismatchError(resp)) {
             return this.upgradeStatus.requireUpgrade();

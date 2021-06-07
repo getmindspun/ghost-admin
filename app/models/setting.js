@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import Model, {attr} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {computed} from '@ember/object';
+import {and} from '@ember/object/computed';
 
 export default Model.extend(ValidationEngine, {
     validationType: 'setting',
@@ -52,13 +52,17 @@ export default Model.extend(ValidationEngine, {
     /**
      * Members settings
      */
-    defaultContentVisibility: attr('string'),
     membersSignupAccess: attr('string'),
+    defaultContentVisibility: attr('string'),
     membersFromAddress: attr('string'),
     membersSupportAddress: attr('string'),
     membersReplyAddress: attr('string'),
     membersPaidSignupRedirect: attr('string'),
     membersFreeSignupRedirect: attr('string'),
+    membersFreePriceName: attr('string'),
+    membersFreePriceDescription: attr('string'),
+    membersMonthlyPriceId: attr('string'),
+    membersYearlyPriceId: attr('string'),
     stripeProductName: attr('string'),
     stripeSecretKey: attr('string'),
     stripePublishableKey: attr('string'),
@@ -76,17 +80,16 @@ export default Model.extend(ValidationEngine, {
     newsletterBodyFontCategory: attr('string'),
     newsletterShowBadge: attr('boolean'),
     newsletterFooterContent: attr('string'),
+    /**
+     * OAuth settings
+     */
+    oauthClientId: attr('string'),
+    oauthClientSecret: attr('string'),
+    /**
+     * Editor settings
+     */
+    editorDefaultEmailRecipients: attr('string'),
+    editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
 
-    // TODO: remove when Access screen with "Nobody" option is out of dev experiments
-    membersAllowFreeSignup: computed('membersSignupAccess', {
-        get() {
-            const signupAccess = this.membersSignupAccess;
-            return signupAccess === 'all' ? true : false;
-        },
-        set(key, allowFreeSignup) {
-            const signupAccess = allowFreeSignup ? 'all' : 'invite';
-            this.set('membersSignupAccess', signupAccess);
-            return allowFreeSignup;
-        }
-    })
+    mailgunIsConfigured: and('mailgunApiKey', 'mailgunDomain', 'mailgunBaseUrl')
 });
